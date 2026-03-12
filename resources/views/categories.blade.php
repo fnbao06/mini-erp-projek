@@ -3,9 +3,9 @@
 @section('header', 'List Kategori')
 
 @section('content')
-    Ini Transaksi
-@endsection
-
-@section('content')
-    Ini Kategori
+    @forelse ($category as $cat)
+        
+    @empty
+        
+    @endforelse
 @endsection
