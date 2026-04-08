@@ -11,8 +11,8 @@
 @endsection --}}
 
 @extends('layouts.app')
-@section('title', 'Daftar Kategori - ')
-@section('header', 'List Kategori')
+@section('title', 'Kelola Kategori - ')
+@section('header', 'Kelola Kategori')
 
 @section('content')
 <div class="w-full max-w-7xl mx-auto py-6">
