@@ -9,8 +9,6 @@ Route::get('/', [DashboardController::class, 'index']);
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');  
 
-Route::get('/transactions', function(){
-    return view('transactions');
-})->name('transactions'); 
+Route::get('/transactions', [TransactionController::class, 'Transaction'])->name('transactions'); 
 
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories'); 

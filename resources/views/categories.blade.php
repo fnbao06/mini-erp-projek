@@ -11,8 +11,8 @@
 @endsection --}}
 
 @extends('layouts.app')
-@section('title', 'Daftar Kategori - ')
-@section('header', 'List Kategori')
+@section('title', 'Kelola Kategori - ')
+@section('header', 'Kelola Kategori')
 
 @section('content')
 <div class="w-full max-w-7xl mx-auto py-6">
@@ -42,20 +42,20 @@
                         </svg>
                     </div>
 
-                    @if (strtolower($cat['tipe']) === 'expense')
+                    @if (strtolower($cat['type']) === 'expense')
                         <span class="inline-flex items-center rounded-full bg-red-50 dark:bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400 ring-1 ring-inset ring-red-500/20">
-                            {{ $cat['tipe'] }}
+                            {{ $cat['type'] }}
                         </span>
                     @else
                         <span class="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
-                            {{ $cat['tipe'] }}
+                            {{ $cat['type'] }}
                         </span>
                     @endif
                 </div>
 
                 <div class="mt-auto mb-4">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white transition-colors">
-                        {{ $cat['nama'] }}
+                        {{ $cat['cat_name'] }}
                     </h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1.5">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
