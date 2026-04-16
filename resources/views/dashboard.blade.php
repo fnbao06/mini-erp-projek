@@ -21,16 +21,16 @@
         <h3 class="text-sm text-gray-500 uppercase font-semibold text mb-2">Transaksi Terakhir</h3>
         @if ($recent_transaction)
             @foreach ($recent_transaction as $trx)
-            <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                <div>
-                    <p  class="font-medium text-gray-700">{{ $trx['Deskripsi'] }}</p>
-                    <p class="text-xs text-gray-400">{{ $trx['Tanggal'] }}</p>
+                <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                    <div>
+                        <p class="font-medium text-gray-700">{{ $trx->desc }}</p>
+                        <p class="text-xs text-gray-400">{{ $trx->trans_date }}</p>
+                    </div>
+                    <p class="font-bold text-{{ $trx->category->cat_name == 'Income' ? 'green' : 'red' }}-600">
+                        Rp {{ number_format($trx->amount, 2, ',', '.') }}
+                    </p>
                 </div>
-                <p class="font-bold text-{{ $trx['Tipe'] == 'Income' ? 'green' : 'red'}}-600">
-                    Rp {{ number_format($trx['Nominal'], 2, ',', '.') }}
-                </p>
-            </div>
-        @endforeach
+            @endforeach
         @else
             <p class="text-2xl font-bold text-gray-900">Belum ada histori</p>
         @endif
