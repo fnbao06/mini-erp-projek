@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
     public function Transaction(){
-        $transactions = Transaction::all();
+        $transactions = Transaction::latest('trans_date')->get();
 
-        return view('transactions', compact('transactions'));
+        $categories = Category::all();
+
+        return view('transactions', compact('transactions', 'categories'));
     }
 
     public function Store(Request $request){
@@ -18,11 +21,11 @@ class TransactionController extends Controller
             'trans_date' => 'required|date',
             'desc' => 'required|string|max:255',
             'amount' => 'required|numeric',
-            'category_id' => 'required|exist:categories,id'
+            'category_id' => 'required|exists:categories,id'
         ]);
 
         Transaction::create($validated);
 
-        return redirect()->route('dashboard')->with('success', 'Transaksi Berhasil Ditambahkan!');
+        return redirect()->route('transactions')->with('success', 'Transaksi Berhasil Ditambahkan!');
     }
 }
