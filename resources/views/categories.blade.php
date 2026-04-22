@@ -5,7 +5,7 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col sm:flex-row justify-between items-end gap-4 mb-12 animate-fade-in-down">
+        <div class="flex flex-col sm:flex-row justify-between items-end gap-4 mb-12 animate-fade-in-up">
             <div>
                 <span class="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-2 block">Management</span>
                 <h2 class="text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none">
@@ -48,7 +48,7 @@
                             <div class="flex flex-col items-end">
                                 <span
                                     class="text-[9px] font-black uppercase tracking-widest {{ strtolower($cat->type) === 'expense' ? 'text-red-400' : 'text-emerald-500' }}">
-                                    ● {{ $cat->type }}
+                                    ● {{ $cat['type'] }}
                                 </span>
                             </div>
                         </div>
@@ -56,11 +56,11 @@
                         <div>
                             <h3
                                 class="text-2xl font-black text-gray-900 tracking-tight mb-2 group-hover:text-black transition-colors">
-                                {{ $cat->cat_name }}
+                                {{ $cat['cat_name'] }}
                             </h3>
                             <div class="flex items-center gap-4">
                                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.1em]">
-                                    {{ $cat->transaction_count ?? 0 }} Usage
+                                    {{ $cat['transaction_count'] ?? 0 }} Usage
                                 </p>
                                 <div class="h-px w-8 bg-gray-100 group-hover:w-16 transition-all duration-700"></div>
                             </div>
@@ -197,14 +197,14 @@
             animation: shimmer 2s infinite;
         }
 
-        .animate-fade-in-down {
-            animation: fadeInDown 0.8s ease-out;
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
         }
 
-        @keyframes fadeInDown {
+        @keyframes fadeInUp {
             0% {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(20px);
             }
 
             100% {

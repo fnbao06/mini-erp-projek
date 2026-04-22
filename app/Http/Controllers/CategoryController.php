@@ -28,10 +28,7 @@ class CategoryController extends Controller
         ]);
 
         try {
-            Category::create([
-                'cat_name' => $validated['cat_name'],
-                'type'     => $validated['type'],
-            ]);
+            Category::create($validated);
 
             return redirect()->route('categories')
                              ->with('success', 'Kategori ' . $validated['cat_name'] . ' berhasil ditambahkan!');

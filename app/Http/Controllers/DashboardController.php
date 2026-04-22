@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Symfony\Component\Process\Process;
 
 class DashboardController extends Controller
 {
@@ -30,6 +31,31 @@ class DashboardController extends Controller
 
         $recent_transaction = Transaction::with('category')->latest()->take(5)->get();
 
-        return view('dashboard', compact('pemasukkan', 'pengeluaran', 'total_saldo', 'recent_transaction'));
+        // Ambil semua transaksi untuk Python
+        $allTransactions = Transaction::join('categories', 'transactions.category_id', '=', 'categories.id')
+            ->select('transactions.amount', 'transactions.trans_date', 'categories.type', 'categories.cat_name as category')
+            ->get();
+
+        $process = new Process([
+            'python',
+            base_path('app/Scripts/dashboard_analytics.py'),
+            json_encode($allTransactions)
+        ]);
+
+        $process->setEnv(['HOME' => base_path('storage/framework/cache')]);
+        $process->run();
+
+        $output = $process->getOutput();
+        $charts = json_decode($output, true);
+
+        return view('dashboard', [
+            'total_saldo' => $total_saldo,
+            'pemasukkan' => $pemasukkan,
+            'pengeluaran' => $pengeluaran,
+            'recent_transaction' => $recent_transaction,
+            'flowChart' => $charts['flow'] ?? '',
+            'categoryChart' => $charts['category'] ?? ''
+        ]);
+
     }
 }

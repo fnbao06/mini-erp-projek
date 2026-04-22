@@ -1,17 +1,21 @@
 @extends('layouts.app')
-@section('title', 'Daftar Transaksi - ')
+@section('title', 'Daftar Transaksi')
 
 @section('content')
-    <div class="p-4 pt- sm:p-10 sm:pt-8 bg-slate-50 dark:bg-slate-950 min-h-screen">
+    <div class="bg-slate-50 dark:bg-slate-950 min-h-screen">
         <div class="max-w-7xl mx-auto">
 
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-6">
+            <div
+                class="flex flex-col md:flex-row justify-between items-start md:items-end pt-4 mb-4 gap-6 animate-fade-in-up">
                 <div>
-                    <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] inline-block">Financial
-                        Records</span>
-                    <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight">Transaction
-                        <span class="text-slate-300">History.</span></h1>
+                    <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] inline-block">
+                        Financial Records
+                    </span>
+                    <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight">
+                        Transaction <span class="text-slate-300">History.</span>
+                    </h1>
                 </div>
+
                 <button onclick="openTransactionModal()"
                     class="group flex items-center px-6 py-4 bg-gray-900 dark:bg-indigo-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all shadow-xl shadow-gray-200 dark:shadow-none active:scale-95">
                     <svg class="w-5 h-5 mr-3 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor"
@@ -62,55 +66,34 @@
                                     </td>
                                     <td class="px-8 py-6 whitespace-nowrap text-sm text-right font-black tracking-tighter">
                                         <span
-                                            class="{{ $transaction->category->type === 'income' ? 'text-emerald-500' : 'text-rose-500' }}">
-                                            {{ $transaction->category->type === 'income' ? '+' : '-' }}
+                                            class="{{ ($transaction->category->type ?? '') === 'income' ? 'text-emerald-500' : 'text-rose-500' }}">
+                                            {{ ($transaction->category->type ?? '') === 'income' ? '+' : '-' }}
                                             Rp{{ number_format($transaction->amount, 0, ',', '.') }}
                                         </span>
                                     </td>
                                     <td class="px-8 py-6 text-center">
                                         <div
                                             class="flex justify-center items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            <a href="#"
-                                                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                                            <button
+                                                class="p-2 text-slate-400 hover:text-indigo-600 rounded-lg transition-all">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    <path stroke-width="2"
                                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.828 2.828 0 114 4L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
-                                            </a>
-                                            <form action="#" method="POST"
-                                                onsubmit="return confirm('Hapus transaksi?')">
-                                                @csrf @method('DELETE')
-                                                <button type="submit"
-                                                    class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </form>
+                                            </button>
+                                            <button
+                                                class="p-2 text-slate-400 hover:text-rose-600 rounded-lg transition-all">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="5" class="px-8 py-20 text-center">
-                                        <div class="flex flex-col items-center">
-                                            <div
-                                                class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                                                <svg class="w-10 h-10 text-slate-200" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path
-                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                                </svg>
-                                            </div>
-                                            <p class="text-slate-400 font-black uppercase tracking-widest text-xs">No
-                                                records found</p>
-                                        </div>
-                                    </td>
-                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -147,7 +130,7 @@
                         <select name="category_id" required
                             class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-gray-900 transition-all font-bold text-slate-900 appearance-none">
                             @foreach ($categories as $cat)
-                                <option value="{{ $cat->id }}">{{ $cat->cat_name }}</option>
+                                <option value="{{ $cat->id }}">{{ $cat['cat_name'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -199,4 +182,22 @@
             }, 500);
         }
     </script>
+
+    <style>
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 0.6s ease-out forwards;
+        }
+    </style>
 @endsection
