@@ -265,7 +265,7 @@
         // AUTO-CLOSE TOAST & AUTO-OPEN MODAL ON ERROR
         document.addEventListener('DOMContentLoaded', function() {
             // 1. Logika Auto-Open Modal berdasarkan jenis Error
-            @if ($errors->any() || session('error'))
+            @if (($errors->any() || session('error')) && old('cat_name'))
                 @if (old('active_id'))
                     // Jika sedang edit, panggil fungsi editCategory dengan ID dari session
                     editCategory({{ old('active_id') }});
