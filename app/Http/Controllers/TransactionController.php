@@ -20,7 +20,7 @@ class TransactionController extends Controller
         $validated = $request->validate([
             'trans_date' => 'required|date',
             'desc' => 'required|string|max:255',
-            'amount' => 'required|numeric',
+            'amount' => 'required|numeric|min:1',
             'category_id' => 'required|exists:categories,id'
         ]);
 
