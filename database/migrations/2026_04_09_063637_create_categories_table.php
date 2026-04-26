@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('cat_name');
             $table->enum('type',['income','expense']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
