@@ -123,7 +123,7 @@
                                         {{ Str::limit($trx->desc, 18) }}</p>
                                     <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
                                         {{ $trx->category->cat_name }} •
-                                        {{ \Carbon\Carbon::parse($trx->trans_date)->format('d M') }}
+                                        {{ \Carbon\Carbon::parse($trx->trans_date)->format('d M y') }}
                                     </p>
                                 </div>
                             </div>

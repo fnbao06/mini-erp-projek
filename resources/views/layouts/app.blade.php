@@ -90,10 +90,75 @@
             </header>
 
             <div class="flex-1 overflow-y-auto p-8">
+                @if (session('success') || session('error') || $errors->any())
+                    <div id="toast-container"
+                        class="fixed top-6 right-6 z-[100] transform transition-all duration-500 translate-y-0 opacity-100">
+                        <div
+                            class="{{ session('success') ? 'bg-gray-900' : 'bg-red-600' }} text-white px-6 py-4 rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] flex items-center gap-4 min-w-[320px] border border-white/10 backdrop-blur-xl">
+
+                            <div
+                                class="w-10 h-10 {{ session('success') ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/20 text-white' }} rounded-xl flex items-center justify-center shrink-0">
+                                @if (session('success'))
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7">
+                                        </path>
+                                    </svg>
+                                @else
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                        </path>
+                                    </svg>
+                                @endif
+                            </div>
+
+                            <div class="flex-1">
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-0.5">
+                                    {{ session('success') ? 'Success' : 'System Message' }}
+                                </p>
+                                <p class="text-sm font-bold tracking-tight">
+                                    @if (session('success'))
+                                        {{ session('success') }}
+                                    @elseif(session('error'))
+                                        {{ session('error') }}
+                                    @else
+                                        {{ $errors->first() }}
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
                 @yield('content')
             </div>
         </main>
     </div>
 </body>
+
+<script>
+    // AUTO-CLOSE TOAST & AUTO-OPEN MODAL ON ERROR
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Logika Auto-Open Modal berdasarkan jenis Error
+        @if (($errors->any() || session('error')) && old('cat_name'))
+            @if (old('active_id'))
+                // Jika sedang edit, panggil fungsi editCategory dengan ID dari session
+                editCategory({{ old('active_id') }});
+            @else
+                // Jika tidak ada ID edit, berarti error saat tambah baru
+                openModalCreate();
+            @endif
+        @endif
+
+        // 2. Hilangkan Toast otomatis setelah 4 detik
+        const toast = document.getElementById('toast-container');
+        if (toast) {
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-20px]', 'opacity-0');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+    });
+</script>
 
 </html>
