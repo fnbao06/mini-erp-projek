@@ -77,11 +77,11 @@ class TransactionController extends Controller
             $transaction = Transaction::findOrFail($id);
             $transaction->update($validator->validated());
 
-            return redirect()->route('transactions.index')
+            // Ubah dari redirect()->route(...) menjadi redirect()->back()
+            return redirect()->back()
                             ->with('success', 'Transaksi berhasil diperbarui!');
                                 
         } catch (\Exception $e) {
-            // Ini untuk error sistem (misal: database down)
             return back()->withInput()
                         ->with('error', 'Terjadi kesalahan sistem.')
                         ->with('error_mode', 'edit')
