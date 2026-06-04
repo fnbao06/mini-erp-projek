@@ -1,0 +1,41 @@
+Ringkasan Controller - Mini ERP Project
+
+1. Controller.php
+   - Berperan sebagai base controller (parent class) abstrak untuk semua controller di aplikasi ini. Saat ini kosong/hanya template bawaan Laravel.
+
+2. CategoryController.php
+   - Mengelola data kategori transaksi (income/expense).
+   - Fitur utama:
+     - Category(): Menampilkan halaman daftar kategori beserta jumlah transaksi yang menggunakan kategori tersebut (menggunakan withCount).
+     - Store(): Menyimpan kategori baru ke database dengan validasi nama unik dan tipe data.
+     - Edit($id): Mengambil satu data kategori berdasarkan ID dan mengembalikannya dalam format JSON (untuk kebutuhan modal edit).
+     - Update(Request, $id): Memperbarui data kategori berdasarkan input yang sudah divalidasi.
+     - Destroy($id): Menghapus kategori dengan logika cerdas:
+       - Jika kategori sudah memiliki transaksi terasosiasi, kategori akan di-soft delete agar data transaksi historis tidak rusak.
+       - Jika belum ada transaksi terasosiasi, kategori akan dihapus permanen (hard delete).
+
+3. DashboardController.php
+   - Mengelola halaman utama/dashboard aplikasi.
+   - Fitur utama:
+     - index(): 
+       - Menghitung total pemasukan (income), total pengeluaran (expense), dan total saldo berjalan.
+       - Mengambil 5 data transaksi terbaru untuk tabel aktivitas.
+       - Mengambil semua transaksi dari database untuk diumpankan ke skrip visualisasi Python (app/Scripts/dashboard_analytics.py) melalui Symfony Process.
+       - Mengirimkan string SVG grafik aliran dana (flowChart) dan sebaran kategori (categoryChart) hasil proses Python ke view dashboard.
+
+4. ReportController.php
+   - Mengelola halaman laporan keuangan bulanan.
+   - Fitur utama:
+     - index(Request): 
+       - Menerima filter bulan dan tahun pilihan (default ke bulan & tahun saat ini).
+       - Menghitung total seluruh pengeluaran (expense) yang terjadi pada bulan dan tahun yang difilter tersebut.
+       - Menampilkan ringkasan laporan ke view reports.
+
+5. TransactionController.php
+   - Mengelola seluruh data transaksi keuangan masuk dan keluar.
+   - Fitur utama:
+     - Transaction(): Menampilkan halaman daftar seluruh transaksi (diurutkan berdasarkan tanggal terbaru) beserta daftar kategori yang tersedia untuk pilihan form.
+     - Store(Request): Menyimpan transaksi baru. Menggunakan Validator manual agar jika gagal, sistem dapat mengirimkan sinyal 'error_mode' => 'create' untuk membuka kembali modal form input secara otomatis di frontend.
+     - Edit($id): Mengambil data detail transaksi spesifik dalam format JSON untuk di-load di modal form edit frontend.
+     - Update(Request, $id): Memperbarui data transaksi terpilih dengan penanganan error manual (mengirim sinyal 'error_mode' => 'edit' dan ID transaksi jika validasi gagal).
+     - Destroy($id): Menghapus data transaksi terpilih dari database secara permanen.
