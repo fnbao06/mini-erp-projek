@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Laporan Keuangan</title>
+    {{-- <title>Laporan Keuangan</title> --}}
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
