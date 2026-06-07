@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', [DashboardController::class, 'index']);
 
@@ -26,3 +27,6 @@ Route::get('/assets', [AssetController::class, 'index'])->name('assets');
 Route::post('/assets', [AssetController::class, 'store'])->name('assets.store');
 Route::post('/assets/{id}/sell', [AssetController::class, 'sell'])->name('assets.sell');
 Route::delete('/assets/{id}', [AssetController::class, 'destroy'])->name('assets.destroy');
+
+Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
