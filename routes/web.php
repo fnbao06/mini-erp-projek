@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AssetController;
 
 Route::get('/', [DashboardController::class, 'index']);
 
@@ -20,3 +21,8 @@ Route::post('/categories', [CategoryController::class, 'Store'])->name('categori
 Route::get('/categories/{id}/edit', [CategoryController::class, 'Edit'])->name('categories.edit');
 Route::put('/categories/{id}', [CategoryController::class, 'Update'])->name('categories.update');
 Route::delete('/categories/{id}', [CategoryController::class, 'Destroy'])->name('categories.destroy');
+
+Route::get('/assets', [AssetController::class, 'index'])->name('assets');
+Route::post('/assets', [AssetController::class, 'store'])->name('assets.store');
+Route::post('/assets/{id}/sell', [AssetController::class, 'sell'])->name('assets.sell');
+Route::delete('/assets/{id}', [AssetController::class, 'destroy'])->name('assets.destroy');
