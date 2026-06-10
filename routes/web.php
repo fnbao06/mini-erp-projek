@@ -6,27 +6,36 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AuthController;
 
-Route::get('/', [DashboardController::class, 'index']);
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');  
+Route::middleware('auth')->group(function () {
+    Route::get('/', [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');  
 
-Route::get('/transactions', [TransactionController::class, 'Transaction'])->name('transactions');
-Route::post('/transactions',[TransactionController::class, 'Store'])->name('transactions.store');
-Route::get('/transactions/{id}/edit', [TransactionController::class, 'Edit'])->name('transactions.edit');
-Route::put('/transactions/{id}', [TransactionController::class, 'Update'])->name('transactions.update');
-Route::delete('/transactions/{id}', [TransactionController::class, 'Destroy'])->name('transactions.destroy');
+    Route::get('/transactions', [TransactionController::class, 'Transaction'])->name('transactions');
+    Route::post('/transactions',[TransactionController::class, 'Store'])->name('transactions.store');
+    Route::get('/transactions/{id}/edit', [TransactionController::class, 'Edit'])->name('transactions.edit');
+    Route::put('/transactions/{id}', [TransactionController::class, 'Update'])->name('transactions.update');
+    Route::delete('/transactions/{id}', [TransactionController::class, 'Destroy'])->name('transactions.destroy');
 
-Route::get('/categories', [CategoryController::class, 'Category'])->name('categories'); 
-Route::post('/categories', [CategoryController::class, 'Store'])->name('categories.store');
-Route::get('/categories/{id}/edit', [CategoryController::class, 'Edit'])->name('categories.edit');
-Route::put('/categories/{id}', [CategoryController::class, 'Update'])->name('categories.update');
-Route::delete('/categories/{id}', [CategoryController::class, 'Destroy'])->name('categories.destroy');
+    Route::get('/categories', [CategoryController::class, 'Category'])->name('categories'); 
+    Route::post('/categories', [CategoryController::class, 'Store'])->name('categories.store');
+    Route::get('/categories/{id}/edit', [CategoryController::class, 'Edit'])->name('categories.edit');
+    Route::put('/categories/{id}', [CategoryController::class, 'Update'])->name('categories.update');
+    Route::delete('/categories/{id}', [CategoryController::class, 'Destroy'])->name('categories.destroy');
 
-Route::get('/assets', [AssetController::class, 'index'])->name('assets');
-Route::post('/assets', [AssetController::class, 'store'])->name('assets.store');
-Route::post('/assets/{id}/sell', [AssetController::class, 'sell'])->name('assets.sell');
-Route::delete('/assets/{id}', [AssetController::class, 'destroy'])->name('assets.destroy');
+    Route::get('/assets', [AssetController::class, 'index'])->name('assets');
+    Route::post('/assets', [AssetController::class, 'store'])->name('assets.store');
+    Route::post('/assets/{id}/sell', [AssetController::class, 'sell'])->name('assets.sell');
+    Route::delete('/assets/{id}', [AssetController::class, 'destroy'])->name('assets.destroy');
 
-Route::get('/reports', [ReportController::class, 'index'])->name('reports');
-Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+    Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
+
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
