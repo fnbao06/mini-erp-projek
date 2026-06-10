@@ -75,7 +75,10 @@
             </nav>
 
             <div class="p-4 border-t border-gray-800">
-                <a href="#"
+                <form action="{{ route('logout') }}" method="POST" id="logout-form" class="hidden">
+                    @csrf
+                </form>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                     class="flex items-center px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -92,12 +95,12 @@
                 <h1 class="text-xl font-bold text-gray-900 tracking-tight uppercase">@yield('header')</h1>
                 <div class="flex items-center space-x-4">
                     <div class="text-right hidden sm:block">
-                        <p class="text-xs font-bold text-gray-900 leading-none">Sifen</p>
+                        <p class="text-xs font-bold text-gray-900 leading-none">{{ Auth::user()->name }}</p>
                         <p class="text-[10px] text-gray-400 font-medium uppercase mt-1">Web Developer</p>
                     </div>
                     <div
                         class="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-xs border border-gray-200 shadow-sm">
-                        S</div>
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
                 </div>
             </header>
 
@@ -135,7 +138,7 @@
                                     @elseif(session('error'))
                                         {{ session('error') }}
                                     @else
-                                        {{ $errors->first() }}
+                                        {{ collect($errors->all())->first() }}
                                     @endif
                                 </p>
                             </div>

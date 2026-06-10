@@ -121,7 +121,10 @@
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Name</label>
                     <input type="text" name="cat_name" value="{{ old('cat_name') }}" id="modal_cat_name" required
                         placeholder="Enter name..."
-                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 placeholder:text-gray-300 text-sm">
+                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 placeholder:text-gray-300 text-sm @error('cat_name') border-red-500 @enderror">
+                    @error('cat_name')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase cat-error-msg">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div class="space-y-1.5">
@@ -131,7 +134,7 @@
                             <input type="radio" name="type" value="income" id="type_income" class="peer sr-only"
                                 {{ old('type') == 'income' ? 'checked' : '' }} required>
                             <div
-                                class="py-3 flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-400 peer-checked:border-gray-900 peer-checked:text-gray-900 peer-checked:bg-gray-50 transition-all duration-300">
+                                class="py-3 flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-400 peer-checked:border-gray-900 peer-checked:text-gray-900 peer-checked:bg-gray-50 transition-all duration-300 @error('type') border-red-500 @enderror">
                                 <span class="font-bold text-[10px] uppercase tracking-widest">Income</span>
                             </div>
                         </label>
@@ -139,11 +142,14 @@
                             <input type="radio" name="type" value="expense" id="type_expense" class="peer sr-only"
                                 {{ old('type') == 'expense' ? 'checked' : '' }}>
                             <div
-                                class="py-3 flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-400 peer-checked:border-gray-900 peer-checked:text-gray-900 peer-checked:bg-gray-50 transition-all duration-300">
+                                class="py-3 flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-400 peer-checked:border-gray-900 peer-checked:text-gray-900 peer-checked:bg-gray-50 transition-all duration-300 @error('type') border-red-500 @enderror">
                                 <span class="font-bold text-[10px] uppercase tracking-widest">Expense</span>
                             </div>
                         </label>
                     </div>
+                    @error('type')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase cat-error-msg">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <button type="submit" id="submitBtn"
@@ -222,7 +228,22 @@
             }, 500);
         }
 
+        function clearCategoryValidationErrors() {
+            // Remove red borders from inputs
+            document.getElementById('modal_cat_name').classList.remove('border-red-500');
+            document.querySelectorAll('#categoryForm .border-red-500').forEach(el => {
+                el.classList.remove('border-red-500');
+            });
+
+            // Remove/hide error messages
+            const errorMessages = document.querySelectorAll('#categoryForm .cat-error-msg');
+            errorMessages.forEach(msg => {
+                msg.remove();
+            });
+        }
+
         function editCategory(id) {
+            clearCategoryValidationErrors();
             // 1. Fetch data dari controller
             fetch(`/categories/${id}/edit`)
                 .then(response => response.json())
@@ -258,7 +279,13 @@
             document.getElementById('submitBtn').innerText = 'Save Category';
             document.getElementById('categoryForm').action = "{{ route('categories.store') }}";
             document.getElementById('methodField').innerHTML = '';
-            document.getElementById('categoryForm').reset();
+            
+            // Clear values explicitly
+            document.getElementById('modal_cat_name').value = '';
+            document.getElementById('type_income').checked = false;
+            document.getElementById('type_expense').checked = false;
+
+            clearCategoryValidationErrors();
             openModal();
         }
 

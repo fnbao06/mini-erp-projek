@@ -127,7 +127,7 @@
 
                 {{-- Input hidden untuk menyimpan ID saat mode edit agar tidak hilang saat validasi gagal --}}
                 <input type="hidden" name="active_id" id="modal_active_id"
-                    value="{{ old('active_id', session('edit_id')) }}">
+                    value="{{ old('active_id') }}">
 
                 <div class="grid grid-cols-2 gap-4">
                     {{-- Input Date --}}
@@ -135,9 +135,9 @@
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Date</label>
                         <input type="date" name="trans_date" id="modal_trans_date" value="{{ old('trans_date') }}"
                             required
-                            class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 text-sm @error('trans_date') border-red-500 @enderror">
-                        @error('trans_date')
-                            <p class="text-[10px] text-red-500 font-bold ml-1 uppercase">{{ $message }}</p>
+                            class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 text-sm @error('trans_date', 'transaction') border-red-500 @enderror">
+                        @error('trans_date', 'transaction')
+                            <p class="text-[10px] text-red-500 font-bold ml-1 uppercase trans-error-msg">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -145,7 +145,7 @@
                     <div class="space-y-1.5">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Category</label>
                         <select name="category_id" id="modal_category_id" required
-                            class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 text-sm appearance-none @error('category_id') border-red-500 @enderror">
+                            class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 text-sm appearance-none @error('category_id', 'transaction') border-red-500 @enderror">
                             <option value="" disabled selected>Select Category</option>
                             @foreach ($categories as $cat)
                                 <option value="{{ $cat->id }}"
@@ -154,8 +154,8 @@
                                 </option>
                             @endforeach
                         </select>
-                        @error('category_id')
-                            <p class="text-[10px] text-red-500 font-bold ml-1 uppercase">{{ $message }}</p>
+                        @error('category_id', 'transaction')
+                            <p class="text-[10px] text-red-500 font-bold ml-1 uppercase trans-error-msg">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -165,9 +165,9 @@
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Description</label>
                     <input type="text" name="desc" id="modal_desc" required placeholder="What was this for?"
                         value="{{ old('desc') }}"
-                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 placeholder:text-gray-300 text-sm @error('desc') border-red-500 @enderror">
-                    @error('desc')
-                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase">{{ $message }}</p>
+                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 placeholder:text-gray-300 text-sm @error('desc', 'transaction') border-red-500 @enderror">
+                    @error('desc', 'transaction')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase trans-error-msg">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -178,10 +178,10 @@
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-gray-300 text-sm">Rp</span>
                         <input type="number" name="amount" id="modal_amount" required placeholder="0"
                             value="{{ old('amount') }}"
-                            class="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-black text-gray-900 text-lg tracking-tighter @error('amount') border-red-500 @enderror">
+                            class="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-black text-gray-900 text-lg tracking-tighter @error('amount', 'transaction') border-red-500 @enderror">
                     </div>
-                    @error('amount')
-                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase">{{ $message }}</p>
+                    @error('amount', 'transaction')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase trans-error-msg">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -257,16 +257,39 @@
             }, 500);
         }
 
+        function clearValidationErrors() {
+            // Remove red borders from inputs
+            const inputs = document.querySelectorAll('#transactionForm input, #transactionForm select');
+            inputs.forEach(input => {
+                input.classList.remove('border-red-500');
+            });
+
+            // Remove/hide error messages
+            const errorMessages = document.querySelectorAll('#transactionForm .trans-error-msg');
+            errorMessages.forEach(msg => {
+                msg.remove();
+            });
+        }
+
         function openModalCreate() {
             document.querySelector('#transactionModal h3').innerHTML = 'Add <span class="text-gray-300">Transaction</span>';
             document.getElementById('submitBtn').innerText = 'Save Transaction';
             document.getElementById('transactionForm').action = "{{ route('transactions.store') }}";
             document.getElementById('methodField').innerHTML = '';
-            document.getElementById('transactionForm').reset();
+            
+            // Clear values explicitly
+            document.getElementById('modal_trans_date').value = '';
+            document.getElementById('modal_category_id').value = '';
+            document.getElementById('modal_desc').value = '';
+            document.getElementById('modal_amount').value = '';
+            document.getElementById('modal_active_id').value = '';
+            
+            clearValidationErrors();
             openModal();
         }
 
         function editTransaction(id) {
+            clearValidationErrors();
             fetch(`/transactions/${id}/edit`)
                 .then(response => response.json())
                 .then(data => {
@@ -282,6 +305,7 @@
                     document.getElementById('modal_category_id').value = data.category_id;
                     document.getElementById('modal_desc').value = data.desc;
                     document.getElementById('modal_amount').value = data.amount;
+                    document.getElementById('modal_active_id').value = id;
 
                     openModal();
                 });
@@ -315,14 +339,13 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Jika ada session error_mode 'edit', jalankan fungsi edit
-            @if (session('error_mode') === 'edit')
-                editTransaction({{ session('edit_id') }});
-            @endif
-
-            // Jika 'create', buka modal kosong
-            @if (session('error_mode') === 'create')
-                openModalCreate();
+            // Jika ada error pada transaction bag
+            @if ($errors->transaction->any())
+                @if (old('active_id'))
+                    editTransaction({{ old('active_id') }});
+                @else
+                    openModalCreate();
+                @endif
             @endif
         });
     </script>

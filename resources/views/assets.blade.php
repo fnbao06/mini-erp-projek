@@ -192,9 +192,9 @@
                 <div class="space-y-1.5">
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Asset Name</label>
                     <input type="text" name="name" id="modal_name" required placeholder="Laptop, Vehicle, etc." value="{{ old('name') }}"
-                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 placeholder:text-gray-300 text-sm @error('name') border-red-500 @enderror">
-                    @error('name')
-                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase">{{ $message }}</p>
+                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 placeholder:text-gray-300 text-sm @error('name', 'create') border-red-500 @enderror">
+                    @error('name', 'create')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase asset-error-msg">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -202,9 +202,9 @@
                 <div class="space-y-1.5">
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Purchase Date</label>
                     <input type="date" name="purchase_date" id="modal_purchase_date" required value="{{ old('purchase_date', date('Y-m-d')) }}"
-                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 text-sm @error('purchase_date') border-red-500 @enderror">
-                    @error('purchase_date')
-                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase">{{ $message }}</p>
+                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 text-sm @error('purchase_date', 'create') border-red-500 @enderror">
+                    @error('purchase_date', 'create')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase asset-error-msg">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -214,10 +214,10 @@
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-gray-300 text-sm">Rp</span>
                         <input type="number" name="purchase_price" id="modal_purchase_price" required placeholder="0" value="{{ old('purchase_price') }}"
-                            class="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-black text-gray-900 text-lg tracking-tighter @error('purchase_price') border-red-500 @enderror">
+                            class="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-black text-gray-900 text-lg tracking-tighter @error('purchase_price', 'create') border-red-500 @enderror">
                     </div>
-                    @error('purchase_price')
-                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase">{{ $message }}</p>
+                    @error('purchase_price', 'create')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase asset-error-msg">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -244,13 +244,15 @@
 
             <form id="sellForm" action="" method="POST" class="space-y-5">
                 @csrf
+                <input type="hidden" name="sell_id" id="modal_sell_id" value="{{ old('sell_id') }}">
+
                 <!-- Sale Date -->
                 <div class="space-y-1.5">
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Sale Date</label>
                     <input type="date" name="sale_date" id="modal_sale_date" required value="{{ old('sale_date', date('Y-m-d')) }}"
-                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 text-sm @error('sale_date') border-red-500 @enderror">
-                    @error('sale_date')
-                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase">{{ $message }}</p>
+                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 text-sm @error('sale_date', 'sell') border-red-500 @enderror">
+                    @error('sale_date', 'sell')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase asset-error-msg">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -260,10 +262,10 @@
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-gray-300 text-sm">Rp</span>
                         <input type="number" name="sale_price" id="modal_sale_price" required placeholder="0" value="{{ old('sale_price') }}"
-                            class="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-black text-gray-900 text-lg tracking-tighter @error('sale_price') border-red-500 @enderror">
+                            class="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-black text-gray-900 text-lg tracking-tighter @error('sale_price', 'sell') border-red-500 @enderror">
                     </div>
-                    @error('sale_price')
-                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase">{{ $message }}</p>
+                    @error('sale_price', 'sell')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase asset-error-msg">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -331,8 +333,22 @@
             }, 500);
         }
 
+        function clearAssetValidationErrors(formSelector) {
+            const form = document.querySelector(formSelector);
+            if (!form) return;
+            form.querySelectorAll('input, select').forEach(input => {
+                input.classList.remove('border-red-500');
+            });
+            form.querySelectorAll('.asset-error-msg').forEach(msg => {
+                msg.remove();
+            });
+        }
+
         function openModalCreate() {
-            document.getElementById('assetForm').reset();
+            document.getElementById('modal_name').value = '';
+            document.getElementById('modal_purchase_date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal_purchase_price').value = '';
+            clearAssetValidationErrors('#assetForm');
             openModal();
         }
 
@@ -343,8 +359,10 @@
         const sellForm = document.getElementById('sellForm');
 
         function openSellModal(id, name, purchaseDate) {
+            clearAssetValidationErrors('#sellForm');
             document.getElementById('sell_asset_title').innerHTML = `Asset <span class="text-gray-900">${name}</span>`;
             sellForm.action = `/assets/${id}/sell`;
+            document.getElementById('modal_sell_id').value = id;
             document.getElementById('modal_sale_date').min = purchaseDate;
             document.getElementById('modal_sale_date').value = new Date().toISOString().split('T')[0];
             document.getElementById('modal_sale_price').value = '';
@@ -397,13 +415,13 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             // Auto open register modal on validation error
-            @if (session('error_mode') === 'create')
+            @if ($errors->create->any())
                 openModalCreate();
             @endif
 
             // Auto open sell modal on validation error
-            @if (session('error_mode') === 'sell')
-                openSellModal({{ session('sell_id') }}, 'Aset', '');
+            @if ($errors->sell->any())
+                openSellModal({{ old('sell_id') }}, 'Aset', '');
             @endif
         });
     </script>
