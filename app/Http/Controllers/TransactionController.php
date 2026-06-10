@@ -18,33 +18,24 @@ class TransactionController extends Controller
     }
 
     public function Store(Request $request){
-        // 1. Validasi input secara manual
-        $validator = Validator::make($request->all(), [
+        // 1. Validasi menggunakan validateWithBag
+        $validated = $request->validateWithBag('transaction', [
             'trans_date'  => 'required|date',
             'category_id' => 'required|exists:categories,id',
             'desc'        => 'required|string|max:255',
             'amount'      => 'required|numeric|min:1',
         ]);
 
-        // 2. Jika validasi gagal
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error_mode', 'create'); // Sinyal agar modal "Create" terbuka lagi
-        }
-
         try {
-            // 3. Simpan data
-            Transaction::create($validator->validated());
+            // 2. Simpan data
+            Transaction::create($validated);
 
             return redirect()->back()
                             ->with('success', 'Transaksi baru berhasil ditambahkan!');
 
         } catch (\Exception $e) {
             return back()->withInput()
-                        ->with('error', 'Terjadi kesalahan sistem saat menyimpan data.')
-                        ->with('error_mode', 'create');
+                        ->withErrors(['db_error' => 'Terjadi kesalahan sistem saat menyimpan data.'], 'transaction');
         }
     }
 
@@ -56,26 +47,17 @@ class TransactionController extends Controller
 
     public function Update(Request $request, $id)
     {
-        // 1. Gunakan Validator manual agar kita bisa menangkap kegagalan validasi
-        $validator = Validator::make($request->all(), [
+        // 1. Validasi menggunakan validateWithBag
+        $validated = $request->validateWithBag('transaction', [
             'trans_date'  => 'required|date',
             'category_id' => 'required|exists:categories,id',
             'desc'        => 'required|string|max:255',
             'amount'      => 'required|numeric|min:1',
         ]);
 
-        // 2. Jika validasi gagal, kirimkan 'error_mode' dan 'edit_id'
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error_mode', 'edit') // Sinyal untuk JS
-                ->with('edit_id', $id);      // ID agar data di-fetch ulang
-            }
-
         try {
             $transaction = Transaction::findOrFail($id);
-            $transaction->update($validator->validated());
+            $transaction->update($validated);
 
             // Ubah dari redirect()->route(...) menjadi redirect()->back()
             return redirect()->back()
@@ -83,9 +65,7 @@ class TransactionController extends Controller
                                 
         } catch (\Exception $e) {
             return back()->withInput()
-                        ->with('error', 'Terjadi kesalahan sistem.')
-                        ->with('error_mode', 'edit')
-                        ->with('edit_id', $id);
+                        ->withErrors(['db_error' => 'Terjadi kesalahan sistem saat memperbarui data.'], 'transaction');
         }
     }
 

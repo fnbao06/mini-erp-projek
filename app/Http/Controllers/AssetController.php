@@ -29,21 +29,14 @@ class AssetController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validateWithBag('create', [
             'name'           => 'required|string|max:255',
             'purchase_date'  => 'required|date',
             'purchase_price' => 'required|numeric|min:1',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error_mode', 'create');
-        }
-
         try {
-            DB::transaction(function () use ($request) {
+            DB::transaction(function () use ($validated) {
                 // 1. Get or create the expense category "Pembelian Aset"
                 $category = Category::firstOrCreate(
                     ['cat_name' => 'Pembelian Aset'],
@@ -52,17 +45,17 @@ class AssetController extends Controller
 
                 // 2. Create the associated cash outflow transaction
                 $transaction = Transaction::create([
-                    'trans_date'  => $request->purchase_date,
-                    'desc'        => 'Pembelian Aset: ' . $request->name,
-                    'amount'      => $request->purchase_price,
+                    'trans_date'  => $validated['purchase_date'],
+                    'desc'        => 'Pembelian Aset: ' . $validated['name'],
+                    'amount'      => $validated['purchase_price'],
                     'category_id' => $category->id,
                 ]);
 
                 // 3. Create the asset in inventory
                 Asset::create([
-                    'name'                    => $request->name,
-                    'purchase_date'           => $request->purchase_date,
-                    'purchase_price'          => $request->purchase_price,
+                    'name'                    => $validated['name'],
+                    'purchase_date'           => $validated['purchase_date'],
+                    'purchase_price'          => $validated['purchase_price'],
                     'purchase_transaction_id' => $transaction->id,
                     'status'                  => 'owned',
                 ]);
@@ -71,8 +64,7 @@ class AssetController extends Controller
             return redirect()->back()->with('success', 'Aset baru berhasil ditambahkan ke inventory dan kas berkurang!');
         } catch (\Exception $e) {
             return back()->withInput()
-                ->with('error', 'Terjadi kesalahan sistem saat menyimpan aset.')
-                ->with('error_mode', 'create');
+                ->withErrors(['db_error' => 'Terjadi kesalahan sistem saat menyimpan aset.'], 'create');
         }
     }
 
@@ -80,21 +72,13 @@ class AssetController extends Controller
     {
         $asset = Asset::findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validateWithBag('sell', [
             'sale_date'  => 'required|date|after_or_equal:' . $asset->purchase_date,
             'sale_price' => 'required|numeric|min:1',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error_mode', 'sell')
-                ->with('sell_id', $id);
-        }
-
         try {
-            DB::transaction(function () use ($request, $asset) {
+            DB::transaction(function () use ($validated, $asset) {
                 // 1. Get or create the income category "Penjualan Aset"
                 $category = Category::firstOrCreate(
                     ['cat_name' => 'Penjualan Aset'],
@@ -103,16 +87,16 @@ class AssetController extends Controller
 
                 // 2. Create the associated cash inflow transaction
                 $transaction = Transaction::create([
-                    'trans_date'  => $request->sale_date,
+                    'trans_date'  => $validated['sale_date'],
                     'desc'        => 'Penjualan Aset: ' . $asset->name,
-                    'amount'      => $request->sale_price,
+                    'amount'      => $validated['sale_price'],
                     'category_id' => $category->id,
                 ]);
 
                 // 3. Update the asset details
                 $asset->update([
-                    'sale_date'           => $request->sale_date,
-                    'sale_price'          => $request->sale_price,
+                    'sale_date'           => $validated['sale_date'],
+                    'sale_price'          => $validated['sale_price'],
                     'sale_transaction_id' => $transaction->id,
                     'status'              => 'sold',
                 ]);
@@ -121,9 +105,7 @@ class AssetController extends Controller
             return redirect()->back()->with('success', 'Aset berhasil terjual dan kas bertambah!');
         } catch (\Exception $e) {
             return back()->withInput()
-                ->with('error', 'Terjadi kesalahan sistem saat memproses penjualan.')
-                ->with('error_mode', 'sell')
-                ->with('sell_id', $id);
+                ->withErrors(['db_error' => 'Terjadi kesalahan sistem saat memproses penjualan.'], 'sell');
         }
     }
 
