@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
@@ -24,7 +25,14 @@ class TransactionController extends Controller
             'category_id' => 'required|exists:categories,id',
             'desc'        => 'required|string|max:255',
             'amount'      => 'required|numeric|min:1',
+            'receipt'     => 'nullable|file|mimes:png,jpeg,jpg,pdf|max:5120'
         ]);
+
+        if ($request->hasFile('receipt')){
+            $path = $request->file('receipt')->store('receipts');
+
+            $validated['receipt_path'] = $path;
+        }
 
         try {
             // 2. Simpan data
@@ -76,5 +84,13 @@ class TransactionController extends Controller
 
         return redirect()->back()
                          ->with('success', 'Transaksi berhasil dihapus!');
+    }
+
+    public function showReceipt(Transaction $transaction){
+        if($transaction->receipt_path || Storage::exists($transaction->receipt_path)){
+            abort(404);
+        }
+
+        return response()->file(Storage::path($transaction->receipt_path));
     }
 }
