@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions/{id}/edit', [TransactionController::class, 'Edit'])->name('transactions.edit');
     Route::put('/transactions/{id}', [TransactionController::class, 'Update'])->name('transactions.update');
     Route::delete('/transactions/{id}', [TransactionController::class, 'Destroy'])->name('transactions.destroy');
+    Route::get('/transactions/{transaction}/receipt', [TransactionController::class, 'showReceipt'])->name('transactions.receipt');
 
     Route::get('/categories', [CategoryController::class, 'Category'])->name('categories'); 
     Route::post('/categories', [CategoryController::class, 'Store'])->name('categories.store');

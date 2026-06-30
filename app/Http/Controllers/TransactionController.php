@@ -6,7 +6,6 @@ use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
 {
@@ -61,10 +60,20 @@ class TransactionController extends Controller
             'category_id' => 'required|exists:categories,id',
             'desc'        => 'required|string|max:255',
             'amount'      => 'required|numeric|min:1',
+            'receipt'     => 'nullable|file|mimes:png,jpeg,jpg,pdf|max:5120'
         ]);
 
         try {
             $transaction = Transaction::findOrFail($id);
+
+            if ($request->hasFile('receipt')){
+                if ($transaction->receipt_path && Storage::exists($transaction->receipt_path)){
+                    Storage::delete($transaction->receipt_path);
+                }
+                $path = $request->file('receipt')->store('receipts');
+                $validated['receipt_path'] = $path;
+            }
+
             $transaction->update($validated);
 
             // Ubah dari redirect()->route(...) menjadi redirect()->back()
@@ -80,6 +89,9 @@ class TransactionController extends Controller
     public function Destroy($id)
     {
         $transaction = Transaction::findOrFail($id);
+        if ($transaction->receipt_path && Storage::exists($transaction->receipt_path)){
+            Storage::delete($transaction->receipt_path);
+        }
         $transaction->delete();
 
         return redirect()->back()
@@ -87,7 +99,7 @@ class TransactionController extends Controller
     }
 
     public function showReceipt(Transaction $transaction){
-        if($transaction->receipt_path || Storage::exists($transaction->receipt_path)){
+        if(!$transaction->receipt_path || !Storage::exists($transaction->receipt_path)){
             abort(404);
         }
 

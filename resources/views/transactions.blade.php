@@ -52,7 +52,20 @@
                                     {{ \Carbon\Carbon::parse($transaction->trans_date)->format('d M, Y') }}
                                 </td>
                                 <td class="px-8 py-6 text-sm font-black text-gray-900 uppercase tracking-tight">
-                                    {{ $transaction->desc }}
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ $transaction->desc }}</span>
+                                        @if ($transaction->receipt_path)
+                                            <a href="{{ route('transactions.receipt', $transaction->id) }}" target="_blank"
+                                                class="text-gray-400 hover:text-gray-900 transition-colors"
+                                                title="Lihat Foto">
+                                                <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                                    </path>
+                                                </svg>
+                                            </a>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-8 py-6 text-center">
                                     <span
@@ -70,6 +83,20 @@
                                 <td class="px-8 py-6 text-center">
                                     <div
                                         class="flex justify-center items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        @if ($transaction->receipt_path)
+                                            <a href="{{ route('transactions.receipt', $transaction->id) }}" target="_blank"
+                                                class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all duration-300"
+                                                title="Lihat Foto">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                                                    </path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                                    </path>
+                                                </svg>
+                                            </a>
+                                        @endif
                                         <button onclick="editTransaction({{ $transaction->id }})"
                                             class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all duration-300">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,7 +148,7 @@
                 </button>
             </div>
 
-            <form id="transactionForm" action="{{ route('transactions.store') }}" method="POST" class="space-y-5">
+            <form id="transactionForm" action="{{ route('transactions.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
                 <div id="methodField"></div>
 
@@ -183,6 +210,26 @@
                     @error('amount', 'transaction')
                         <p class="text-[10px] text-red-500 font-bold ml-1 uppercase trans-error-msg">{{ $message }}</p>
                     @enderror
+                </div>
+
+                {{-- Input Receipt / Photo --}}
+                <div class="space-y-1.5" id="modal_receipt_container">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Receipt / Photo</label>
+                    <input type="file" name="receipt" id="modal_receipt" accept="image/*,application/pdf"
+                        class="w-full px-4 py-3 bg-gray-50 border-transparent border-2 rounded-xl focus:bg-white focus:border-gray-900 focus:ring-0 transition-all font-semibold text-gray-900 text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-wider file:bg-gray-900 file:text-white hover:file:bg-black file:cursor-pointer @error('receipt', 'transaction') border-red-500 @enderror">
+                    @error('receipt', 'transaction')
+                        <p class="text-[10px] text-red-500 font-bold ml-1 uppercase trans-error-msg">{{ $message }}</p>
+                    @enderror
+                    <div id="modal_receipt_preview" class="hidden flex items-center gap-2 mt-2 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl">
+                        <span class="text-xs font-bold text-gray-500">Current Photo:</span>
+                        <a id="modal_current_receipt_link" href="#" target="_blank" class="text-xs font-black text-gray-900 uppercase tracking-wider hover:underline flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            View
+                        </a>
+                    </div>
                 </div>
 
                 <button type="submit" id="submitBtn"
@@ -283,6 +330,8 @@
             document.getElementById('modal_desc').value = '';
             document.getElementById('modal_amount').value = '';
             document.getElementById('modal_active_id').value = '';
+            document.getElementById('modal_receipt').value = '';
+            document.getElementById('modal_receipt_preview').classList.add('hidden');
             
             clearValidationErrors();
             openModal();
@@ -306,6 +355,14 @@
                     document.getElementById('modal_desc').value = data.desc;
                     document.getElementById('modal_amount').value = data.amount;
                     document.getElementById('modal_active_id').value = id;
+                    document.getElementById('modal_receipt').value = '';
+
+                    if (data.receipt_path) {
+                        document.getElementById('modal_receipt_preview').classList.remove('hidden');
+                        document.getElementById('modal_current_receipt_link').href = `/transactions/${data.id}/receipt`;
+                    } else {
+                        document.getElementById('modal_receipt_preview').classList.add('hidden');
+                    }
 
                     openModal();
                 });
