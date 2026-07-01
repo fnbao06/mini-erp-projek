@@ -4,138 +4,158 @@
 @section('header', 'Dashboard')
 
 @section('content')
-    <div class="max-w-7xl mx-auto space-y-8">
-        <!-- Stats Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Balance -->
-            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Saldo</p>
-                    <div class="p-2 bg-gray-100 rounded-lg text-gray-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
-                            </path>
-                        </svg>
-                    </div>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-900 leading-none">Rp {{ number_format($total_saldo, 0, ',', '.') }}</h3>
-                <p class="text-[10px] text-gray-400 mt-4 font-semibold uppercase tracking-wider">
-                    Update: {{ now()->format('d M Y') }}
-                </p>
+    <div class="max-w-7xl mx-auto space-y-8 animate-fade-in">
+        <!-- Welcome Banner & Quick Actions -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-6">
+            <div>
+                <h1 class="text-xl font-bold text-gray-900 tracking-tight">Selamat Datang, {{ Auth::user()->name }}!</h1>
+                <p class="text-xs text-gray-400 font-medium mt-0.5">Berikut adalah rangkuman performa keuangan dan inventaris bisnis Anda hari ini.</p>
             </div>
-
-            <!-- Income -->
-            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pemasukkan</p>
-                    <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
-                        </svg>
-                    </div>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-900 leading-none">Rp {{ number_format($pemasukkan, 0, ',', '.') }}</h3>
-                <p class="text-[10px] text-emerald-600 mt-4 font-semibold uppercase tracking-wider">
-                    Inflow Management
-                </p>
-            </div>
-
-            <!-- Expense -->
-            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pengeluaran</p>
-                    <div class="p-2 bg-rose-50 rounded-lg text-rose-600">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>
-                        </svg>
-                    </div>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-900 leading-none">Rp {{ number_format($pengeluaran, 0, ',', '.') }}</h3>
-                <p class="text-[10px] text-rose-600 mt-4 font-semibold uppercase tracking-wider">
-                    Cost Efficiency
-                </p>
+            <div class="flex items-center gap-3">
+                <a href="/transactions"
+                    class="px-4 py-2 bg-gray-900 text-white rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors shadow-sm">
+                    Tambah Transaksi
+                </a>
+                <a href="/assets"
+                    class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors shadow-sm">
+                    Daftar Aset
+                </a>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Charts Section -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
-                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Financial Analytics</h3>
-                    <span class="px-2.5 py-1 bg-gray-100 rounded text-[9px] font-bold text-gray-500 uppercase tracking-wider">
-                        Chart.js Engine
-                    </span>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-                    <div class="flex flex-col items-center justify-between">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Cashflow Trend (30 Days)</p>
-                        <div class="w-full bg-gray-50 rounded-lg p-4 min-h-[220px] flex items-center justify-center flex-1">
-                            <canvas id="cashflowChart" class="max-w-full hidden"></canvas>
-                            <div id="cashflowEmpty" class="text-gray-400 italic text-xs">No transaction data within last 30 days</div>
+        <!-- Main Dashboard Split Layout Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            
+            <!-- Left Columns (lg:col-span-2) - Stats and Charts -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Stats Cards Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Balance -->
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Saldo</p>
+                            <span class="p-1.5 bg-gray-50 rounded text-gray-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                </svg>
+                            </span>
                         </div>
+                        <h3 class="text-lg font-bold text-gray-900 mt-2">Rp {{ number_format($total_saldo, 0, ',', '.') }}</h3>
+                        <p class="text-[9px] text-gray-400 mt-2 font-medium">Saldo kas bersih saat ini</p>
                     </div>
 
-                    <div class="flex flex-col items-center justify-between">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Expense Distribution</p>
-                        <div class="w-full bg-gray-50 rounded-lg p-4 min-h-[220px] flex items-center justify-center flex-1">
-                            <canvas id="expenseChart" class="max-w-full hidden"></canvas>
-                            <div id="expenseEmpty" class="text-gray-400 italic text-xs">No expense data available</div>
+                    <!-- Income -->
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Pemasukkan</p>
+                            <span class="p-1.5 bg-emerald-50 rounded text-emerald-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                                </svg>
+                            </span>
                         </div>
+                        <h3 class="text-lg font-bold text-gray-900 mt-2">Rp {{ number_format($pemasukkan, 0, ',', '.') }}</h3>
+                        <p class="text-[9px] text-emerald-500 mt-2 font-medium">Total dana kas masuk</p>
+                    </div>
+
+                    <!-- Expense -->
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Pengeluaran</p>
+                            <span class="p-1.5 bg-rose-50 rounded text-rose-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>
+                                </svg>
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mt-2">Rp {{ number_format($pengeluaran, 0, ',', '.') }}</h3>
+                        <p class="text-[9px] text-rose-500 mt-2 font-medium">Total dana kas keluar</p>
+                    </div>
+                </div>
+
+                <!-- Cashflow Trend Card -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                        <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Tren Arus Kas (30 Hari Terakhir)</h3>
+                        <span class="px-2.5 py-1 bg-emerald-50 text-[9px] font-bold text-emerald-600 rounded uppercase tracking-wider">
+                            Cashflow
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-50 rounded-lg p-4 min-h-[250px] flex items-center justify-center">
+                        <canvas id="cashflowChart" class="max-w-full hidden"></canvas>
+                        <div id="cashflowEmpty" class="text-gray-400 italic text-xs">Belum ada data transaksi dalam 30 hari terakhir.</div>
+                    </div>
+                </div>
+
+                <!-- Expense Distribution Card -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                        <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Proporsi Pengeluaran per Kategori</h3>
+                        <span class="px-2.5 py-1 bg-rose-50 text-[9px] font-bold text-rose-600 rounded uppercase tracking-wider">
+                            Distribution
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-50 rounded-lg p-4 min-h-[220px] flex items-center justify-center">
+                        <canvas id="expenseChart" class="max-w-full hidden"></canvas>
+                        <div id="expenseEmpty" class="text-gray-400 italic text-xs">Belum ada pengeluaran yang tercatat.</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
-                <div>
-                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6 pb-4 border-b border-gray-100">
-                        Recent Activity
-                    </h3>
-                    <div class="space-y-4">
-                        @forelse ($recent_transaction as $trx)
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 rounded-full {{ $trx->category->type == 'income' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-700' }} flex items-center justify-center mr-3">
-                                        @if ($trx->category->type == 'income')
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-width="2.5" d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        @else
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-width="2.5" d="M20 12H4"></path>
-                                            </svg>
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-800 uppercase tracking-tight">
-                                            {{ Str::limit($trx->desc, 18) }}
+            <!-- Right Column (lg:col-span-1) - Full Height Recent Activity Feed -->
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between min-h-[690px]">
+                    <div>
+                        <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
+                            <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Aktivitas Terbaru</h3>
+                            <a href="/transactions" class="text-[10px] font-bold text-gray-400 hover:text-gray-950 uppercase tracking-wider transition-colors">
+                                Lihat Semua
+                            </a>
+                        </div>
+                        
+                        <!-- Timeline List -->
+                        <div class="space-y-3">
+                            @forelse ($recent_transaction as $trx)
+                                @php $type = $trx->category->type ?? 'expense'; @endphp
+                                <div class="bg-gray-50/50 p-3 rounded-lg border-l-4 {{ $type === 'income' ? 'border-emerald-500' : 'border-rose-500' }} border border-gray-100 flex items-start justify-between gap-2 shadow-xs transition-all hover:bg-gray-50">
+                                    <div class="space-y-1">
+                                        <p class="text-xs font-bold text-gray-900 leading-tight">
+                                            {{ Str::limit($trx->desc, 22) }}
                                         </p>
-                                        <p class="text-[9px] text-gray-400 font-medium uppercase mt-0.5">
-                                            {{ $trx->category->cat_name }} • {{ \Carbon\Carbon::parse($trx->trans_date)->format('d M y') }}
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider {{ $type === 'income' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">
+                                                {{ $trx->category->cat_name ?? 'Umum' }}
+                                            </span>
+                                            <span class="text-[9px] text-gray-400 font-medium">
+                                                {{ \Carbon\Carbon::parse($trx->trans_date)->format('d M y') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs font-extrabold {{ $type === 'income' ? 'text-emerald-600' : 'text-gray-900' }}">
+                                            {{ $type === 'income' ? '+' : '-' }}Rp{{ number_format($trx->amount, 0, ',', '.') }}
                                         </p>
                                     </div>
                                 </div>
-                                <p class="text-xs font-bold {{ $trx->category->type == 'income' ? 'text-emerald-600' : 'text-gray-950' }}">
-                                    {{ $trx->category->type == 'income' ? '+' : '-' }}Rp{{ number_format($trx->amount, 0, ',', '.') }}
-                                </p>
-                            </div>
-                        @empty
-                            <div class="text-center py-12">
-                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">No logs found</p>
-                            </div>
-                        @endforelse
+                            @empty
+                                <div class="text-center py-20">
+                                    <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Belum ada transaksi</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-gray-100 text-center">
+                        <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                            Total: {{ $recent_transaction->count() }} Histori Terakhir
+                        </p>
                     </div>
                 </div>
-
-                <a href="/transactions"
-                    class="block text-center mt-6 py-2.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors uppercase tracking-wider">
-                    View All History
-                </a>
             </div>
+
         </div>
     </div>
 
