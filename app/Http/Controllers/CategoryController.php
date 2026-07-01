@@ -74,18 +74,13 @@ class CategoryController extends Controller
         // Cek jumlah transaksi (usage)
         $usageCount = $category->transaction()->count();
 
-        try {
-            if ($usageCount > 0) {
-                // Soft Delete: Hanya mengisi kolom deleted_at
-                $category->delete();
-                $message = "Kategori '{$category->cat_name}' berhasil di-soft delete karena memiliki transaksi.";
-            } else {
-                // Hard Delete: Menghapus permanen dari database
-                $category->forceDelete();
-                $message = "Kategori '{$category->cat_name}' berhasil dihapus permanen.";
-            }
+        if ($usageCount > 0) {
+            return redirect()->back()->with('error', "Kategori '{$category->cat_name}' tidak dapat dihapus karena masih digunakan oleh {$usageCount} transaksi.");
+        }
 
-            return redirect()->back()->with('success', $message);
+        try {
+            $category->forceDelete();
+            return redirect()->back()->with('success', "Kategori '{$category->cat_name}' berhasil dihapus permanen.");
 
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat menghapus data.');

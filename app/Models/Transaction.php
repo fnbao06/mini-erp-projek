@@ -8,6 +8,15 @@ class Transaction extends Model
 {
     protected $fillable = ['trans_date','desc','amount','category_id','receipt_path'];
 
+    protected static function booted()
+    {
+        static::deleting(function ($transaction) {
+            if ($transaction->receipt_path && \Illuminate\Support\Facades\Storage::exists($transaction->receipt_path)) {
+                \Illuminate\Support\Facades\Storage::delete($transaction->receipt_path);
+            }
+        });
+    }
+
     public function category(){
         return $this->belongsTo(Category::class);
     }

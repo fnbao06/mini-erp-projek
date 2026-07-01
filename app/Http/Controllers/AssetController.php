@@ -33,22 +33,29 @@ class AssetController extends Controller
             'name'           => 'required|string|max:255',
             'purchase_date'  => 'required|date',
             'purchase_price' => 'required|numeric|min:1',
+            'receipt'        => 'nullable|file|mimes:png,jpeg,jpg,pdf|max:5120',
         ]);
 
         try {
-            DB::transaction(function () use ($validated) {
+            DB::transaction(function () use ($validated, $request) {
                 // 1. Get or create the expense category "Pembelian Aset"
                 $category = Category::firstOrCreate(
                     ['cat_name' => 'Pembelian Aset'],
                     ['type' => 'expense']
                 );
 
+                $receiptPath = null;
+                if ($request->hasFile('receipt')) {
+                    $receiptPath = $request->file('receipt')->store('receipts');
+                }
+
                 // 2. Create the associated cash outflow transaction
                 $transaction = Transaction::create([
-                    'trans_date'  => $validated['purchase_date'],
-                    'desc'        => 'Pembelian Aset: ' . $validated['name'],
-                    'amount'      => $validated['purchase_price'],
-                    'category_id' => $category->id,
+                    'trans_date'   => $validated['purchase_date'],
+                    'desc'         => 'Pembelian Aset: ' . $validated['name'],
+                    'amount'       => $validated['purchase_price'],
+                    'category_id'  => $category->id,
+                    'receipt_path' => $receiptPath,
                 ]);
 
                 // 3. Create the asset in inventory
@@ -75,22 +82,29 @@ class AssetController extends Controller
         $validated = $request->validateWithBag('sell', [
             'sale_date'  => 'required|date|after_or_equal:' . $asset->purchase_date,
             'sale_price' => 'required|numeric|min:1',
+            'receipt'    => 'nullable|file|mimes:png,jpeg,jpg,pdf|max:5120',
         ]);
 
         try {
-            DB::transaction(function () use ($validated, $asset) {
+            DB::transaction(function () use ($validated, $asset, $request) {
                 // 1. Get or create the income category "Penjualan Aset"
                 $category = Category::firstOrCreate(
                     ['cat_name' => 'Penjualan Aset'],
                     ['type' => 'income']
                 );
 
+                $receiptPath = null;
+                if ($request->hasFile('receipt')) {
+                    $receiptPath = $request->file('receipt')->store('receipts');
+                }
+
                 // 2. Create the associated cash inflow transaction
                 $transaction = Transaction::create([
-                    'trans_date'  => $validated['sale_date'],
-                    'desc'        => 'Penjualan Aset: ' . $asset->name,
-                    'amount'      => $validated['sale_price'],
-                    'category_id' => $category->id,
+                    'trans_date'   => $validated['sale_date'],
+                    'desc'         => 'Penjualan Aset: ' . $asset->name,
+                    'amount'       => $validated['sale_price'],
+                    'category_id'  => $category->id,
+                    'receipt_path' => $receiptPath,
                 ]);
 
                 // 3. Update the asset details

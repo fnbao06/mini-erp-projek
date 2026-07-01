@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -74,7 +75,23 @@ class TransactionController extends Controller
                 $validated['receipt_path'] = $path;
             }
 
-            $transaction->update($validated);
+            DB::transaction(function () use ($transaction, $validated) {
+                $transaction->update($validated);
+
+                if ($transaction->purchaseAsset) {
+                    $transaction->purchaseAsset->update([
+                        'purchase_price' => $validated['amount'],
+                        'purchase_date'  => $validated['trans_date'],
+                    ]);
+                }
+
+                if ($transaction->saleAsset) {
+                    $transaction->saleAsset->update([
+                        'sale_price' => $validated['amount'],
+                        'sale_date'  => $validated['trans_date'],
+                    ]);
+                }
+            });
 
             // Ubah dari redirect()->route(...) menjadi redirect()->back()
             return redirect()->back()
@@ -89,13 +106,37 @@ class TransactionController extends Controller
     public function Destroy($id)
     {
         $transaction = Transaction::findOrFail($id);
-        if ($transaction->receipt_path && Storage::exists($transaction->receipt_path)){
-            Storage::delete($transaction->receipt_path);
-        }
-        $transaction->delete();
+        
+        try {
+            DB::transaction(function () use ($transaction) {
+                // If deleting the purchase transaction, delete the asset too
+                if ($transaction->purchaseAsset) {
+                    $transaction->purchaseAsset->delete();
+                }
 
-        return redirect()->back()
-                         ->with('success', 'Transaksi berhasil dihapus!');
+                // If deleting the sale transaction, revert the asset status to 'owned'
+                if ($transaction->saleAsset) {
+                    $transaction->saleAsset->update([
+                        'sale_date'           => null,
+                        'sale_price'          => null,
+                        'sale_transaction_id' => null,
+                        'status'              => 'owned',
+                    ]);
+                }
+
+                if ($transaction->receipt_path && Storage::exists($transaction->receipt_path)){
+                    Storage::delete($transaction->receipt_path);
+                }
+                
+                $transaction->delete();
+            });
+
+            return redirect()->back()
+                             ->with('success', 'Transaksi berhasil dihapus!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                             ->with('error', 'Terjadi kesalahan sistem saat menghapus transaksi.');
+        }
     }
 
     public function showReceipt(Transaction $transaction){
