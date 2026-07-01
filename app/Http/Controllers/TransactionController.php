@@ -111,7 +111,11 @@ class TransactionController extends Controller
             DB::transaction(function () use ($transaction) {
                 // If deleting the purchase transaction, delete the asset too
                 if ($transaction->purchaseAsset) {
-                    $transaction->purchaseAsset->delete();
+                    $asset = $transaction->purchaseAsset;
+                    if ($asset->saleTransaction) {
+                        $asset->saleTransaction->delete();
+                    }
+                    $asset->delete();
                 }
 
                 // If deleting the sale transaction, revert the asset status to 'owned'

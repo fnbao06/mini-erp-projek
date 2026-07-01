@@ -1,0 +1,135 @@
+================================================================================
+DOKUMENTASI ALUR KERJA CORE SYSTEM: INTEGRASI CRUD ASET & TRANSAKSI (MONEYTRACK)
+================================================================================
+
+Dokumen ini menjelaskan secara rinci dan mendalam apa saja yang terjadi di balik layar (behind the scenes) pada core system Laravel Anda terkait operasi CRUD Aset dan hubungannya dengan Transaksi Keuangan.
+
+--------------------------------------------------------------------------------
+1. STRUKTUR RELASI CORE (DATABASE RELATIONSHIP)
+--------------------------------------------------------------------------------
+Hubungan antara Model Asset dan Model Transaction dirancang dengan relasi "One-to-One" (Satu ke Satu) bersyarat:
+- Satu Aset memiliki hubungan ke 1 Transaksi Pembelian (`purchase_transaction_id` pada tabel assets).
+- Satu Aset memiliki hubungan opsional ke 1 Transaksi Penjualan (`sale_transaction_id` pada tabel assets) jika statusnya sudah terjual.
+
+--------------------------------------------------------------------------------
+2. PENDAFTARAN ASET BARU (AssetController@store)
+--------------------------------------------------------------------------------
+Saat pengguna menambahkan aset baru dari form "Daftar Aset":
+
+1. Validasi Input:
+   Laravel memvalidasi input nama aset, tanggal beli, harga beli, dan file kuitansi.
+2. Membuka Transaksi Database (DB::transaction):
+   Seluruh operasi database dibungkus dalam transaksi SQL guna menjamin integritas data (Atomicity).
+3. Pengambilan/Pembuatan Kategori:
+   Sistem mencari atau membuat Kategori khusus bernama "Pembelian Aset" berjenis pengeluaran (`expense`).
+4. Penyimpanan Berkas Kuitansi:
+   Jika ada file kuitansi diunggah, Laravel menyimpannya ke folder privat `storage/app/private/receipts` dan mengembalikan path filenya.
+5. Pembuatan Transaksi Kas Keluar (Model Transaction):
+   Baris data baru dibuat pada tabel `transactions` untuk mencatat arus kas keluar dengan tipe "Pembelian Aset" dan nilai pengeluaran setara harga beli aset.
+6. Pembuatan Baris Data Aset (Model Asset):
+   Baris data baru dibuat pada tabel `assets` dengan merekam:
+   - Nama, Tanggal Beli, Harga Beli.
+   - `purchase_transaction_id` diisi dengan ID transaksi yang baru dibuat di langkah sebelumnya.
+   - `status` diset menjadi 'owned' (dimiliki).
+7. Selesai (SQL Commit). Jika terjadi error pada salah satu langkah di atas, database akan melakukan Rollback (semua perubahan dibatalkan).
+
+--------------------------------------------------------------------------------
+3. PENJUALAN ASET (AssetController@sell)
+--------------------------------------------------------------------------------
+Saat pengguna menjual aset melalui modal penjualan:
+
+1. Validasi Input:
+   Laravel memverifikasi tanggal jual harus sama atau setelah tanggal beli aset, harga jual minimal Rp 1, dan file kuitansi penjualan opsional.
+2. Membuka Transaksi Database (DB::transaction).
+3. Pengambilan/Pembuatan Kategori:
+   Sistem mencari atau membuat Kategori khusus bernama "Penjualan Aset" berjenis pemasukan (`income`).
+4. Penyimpanan Berkas Kuitansi Penjualan:
+   Jika ada file kuitansi diunggah, disimpan ke storage privat dan mengembalikan path filenya.
+5. Pembuatan Transaksi Kas Masuk (Model Transaction):
+   Baris data baru dibuat pada tabel `transactions` untuk mencatat arus kas masuk dengan deskripsi "Penjualan Aset: [Nama Barang]" dan nominal setara harga jual.
+6. Pembaruan Status Aset (Model Asset):
+   Data aset di tabel `assets` di-update:
+   - `sale_date` diisi dengan tanggal terjual.
+   - `sale_price` diisi dengan harga jual barang.
+   - `sale_transaction_id` diisi dengan ID transaksi penjualan baru.
+   - `status` diubah dari 'owned' menjadi 'sold' (terjual).
+7. Selesai (SQL Commit).
+
+--------------------------------------------------------------------------------
+4. EDIT HARGA & TANGGAL TRANSAKSI (TransactionController@Update)
+--------------------------------------------------------------------------------
+Bagaimana jika pengguna mengedit nilai atau tanggal transaksi pembelian/penjualan dari halaman Transaksi? Sistem akan otomatis menyinkronkan data aset terkait:
+
+1. Validasi Input:
+   Memvalidasi data transaksi yang baru diubah.
+2. Membuka Transaksi Database (DB::transaction).
+3. Update Transaksi:
+   Mengubah nominal (`amount`), deskripsi (`desc`), dan tanggal (`trans_date`) di tabel `transactions`.
+4. Pengecekan Relasi Aset:
+   - JIKA transaksi yang diubah adalah **Transaksi Pembelian Aset** (`if ($transaction->purchaseAsset)`):
+     Sistem secara otomatis meng-update data Aset tersebut di tabel `assets` agar `purchase_price` dan `purchase_date` sama dengan data transaksi terbaru.
+   - JIKA transaksi yang diubah adalah **Transaksi Penjualan Aset** (`if ($transaction->saleAsset)`):
+     Sistem secara otomatis meng-update data Aset tersebut di tabel `assets` agar `sale_price` dan `sale_date` sama dengan data transaksi terbaru.
+5. Selesai (SQL Commit). Nilai inventaris dan riwayat keuangan dijamin tetap sinkron 100%.
+
+--------------------------------------------------------------------------------
+5. HAPUS ASET DARI INVENTORY (AssetController@destroy)
+--------------------------------------------------------------------------------
+Saat pengguna menghapus aset dari halaman Daftar Aset:
+
+1. Membuka Transaksi Database (DB::transaction).
+2. Hapus Transaksi Terkait:
+   - JIKA aset memiliki `purchaseTransaction`:
+     Menjalankan perintah hapus transaksi pembelian. Penghapusan ini memicu event `deleting` pada model Transaction untuk menghapus file foto kuitansi belinya dari harddisk, lalu menghapus baris transaksinya.
+   - JIKA aset memiliki `saleTransaction`:
+     Menjalankan perintah hapus transaksi penjualan. Ini memicu pembersihan file foto kuitansi jual dari harddisk, lalu menghapus baris transaksinya.
+3. Hapus Aset:
+   Menghapus baris data aset dari tabel `assets`.
+4. Selesai (SQL Commit). Aset, kedua transaksi kas terkait, beserta file fisiknya di server terhapus bersih.
+
+--------------------------------------------------------------------------------
+6. HAPUS TRANSAKSI DARI HALAMAN TRANSAKSI (TransactionController@Destroy)
+--------------------------------------------------------------------------------
+Bagaimana jika pengguna menghapus transaksi terkait aset langsung dari halaman riwayat Transaksi?
+
+1. Membuka Transaksi Database (DB::transaction).
+2. Cek Relasi Transaksi:
+   - JIKA transaksi yang dihapus adalah **Transaksi Pembelian Aset** (`if ($transaction->purchaseAsset)`):
+     Karena barang tidak mungkin ada jika tidak dibeli, maka Aset terkait diambil (`$asset = $transaction->purchaseAsset`).
+     * Jika Aset tersebut ternyata sudah terjual dan memiliki transaksi penjualan, hapus transaksi penjualan tersebut terlebih dahulu (`$asset->saleTransaction->delete()`).
+     * Setelah itu, hapus data Aset tersebut secara permanen (`$asset->delete()`).
+   - JIKA transaksi yang dihapus adalah **Transaksi Penjualan Aset** (`if ($transaction->saleAsset)`):
+     Karena penghapusan transaksi penjualan berarti barang batal terjual (tetapi barang fisiknya masih ada di tangan kita), maka data Aset tidak boleh dihapus.
+     * Sistem mengambil data aset (`$transaction->saleAsset`) lalu melakukan update:
+       - Mengubah status kembali ke 'owned'.
+       - Mengosongkan tanggal jual (`sale_date = null`).
+       - Mengosongkan harga jual (`sale_price = null`).
+       - Memutus hubungan ID transaksi jual (`sale_transaction_id = null`).
+3. Pembersihan Berkas Fisik Kuitansi:
+   Sistem mendeteksi jika transaksi tersebut memiliki kuitansi (`receipt_path`), file kuitansi tersebut akan dihapus dari server.
+4. Hapus Baris Transaksi:
+   Data transaksi tersebut dihapus dari database.
+5. Selesai (SQL Commit).
+
+--------------------------------------------------------------------------------
+7. MEKANISME AUTOMATIC MEDIA PURGING (Model Event @ Transaction.php)
+--------------------------------------------------------------------------------
+Untuk memastikan penyimpanan server tidak penuh oleh file-file sampah kuitansi yang transaksinya sudah dihapus, model Transaction memanfaatkan **Eloquent Lifecycle Event**:
+
+```php
+protected static function booted()
+{
+    static::deleting(function ($transaction) {
+        if ($transaction->receipt_path && \Illuminate\Support\Facades\Storage::exists($transaction->receipt_path)) {
+            \Illuminate\Support\Facades\Storage::delete($transaction->receipt_path);
+        }
+    });
+}
+```
+
+Mekanisme Kerja:
+1. Pemicu: Perintah `$transaction->delete()` dipanggil dari mana saja (Controller, Seeder, Tinker).
+2. Intersepsi: Sebelum query SQL `DELETE` dikirim ke MySQL, Laravel memicu fungsi callback di atas.
+3. Eksekusi: Mengecek kolom `receipt_path`. Jika tidak kosong dan file-nya ada di harddisk, class `Storage::delete` akan menghapus file fisik tersebut.
+4. Query DB: Setelah file di server hilang, barulah Laravel menghapus baris barunya di database MySQL.
+================================================================================
